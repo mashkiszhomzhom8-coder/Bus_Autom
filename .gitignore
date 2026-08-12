@@ -1,0 +1,19 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+logs/
+*_backup.xlsx
+*_backup.xlsm
+
+.idea/
+
+inventory.db
+
+# Excel
+~$*.xlsm
+~$*.xlsx
+
+Шаблон_прайса.xlsm
+Шаблон_прайса.xlsx
