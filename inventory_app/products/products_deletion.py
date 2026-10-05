@@ -169,6 +169,7 @@ def delete_products(workbook, raw_ids):
 
         workbook.save()
         conn.commit()
+        logger.info("Все товары успешно деактивированы")
 
     except (ProductDeletionInputError, ProductIdNotFoundError, ProductAlreadyDeletedError) as error:
         conn.rollback()

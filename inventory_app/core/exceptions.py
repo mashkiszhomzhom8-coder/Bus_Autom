@@ -77,3 +77,47 @@ class ProductAlreadyActiveError(UserError):
 class ProductRestorationSystemError(SystemError):
     """Ошибка восстановления указанного товара"""
     pass
+
+class OrderDeletionInputError(UserError):
+    """Некорректно указаны заказы для деактивации."""
+
+
+class OrderIdNotFoundError(OrderDeletionInputError):
+    """Указанный ID заказа отсутствует в базе данных."""
+
+
+class OrderAlreadyDeletedError(OrderDeletionInputError):
+    """Указанный заказ уже неактивен."""
+
+
+class OrderDeletionSystemError(SystemError):
+    """Системная ошибка деактивации заказа."""
+
+class OrderRestorationInputError(UserError):
+    """Некорректный ввод заказов для восстановления."""
+    pass
+
+
+class OrderAlreadyActiveError(OrderRestorationInputError):
+    """Указанный заказ уже активен."""
+    pass
+
+
+class OrderRestorationSystemError(SystemError):
+    """Системная ошибка восстановления заказа."""
+    pass
+
+class SeasonValidationError(AppError):
+    """
+    Ошибка, из-за которой текущий сезон нельзя закрыть.
+    Сообщение этого исключения можно показывать владельцу.
+    """
+    pass
+
+class NoActiveSeasonError(SeasonValidationError):
+    """Нет активного сезона в БД"""
+    pass
+
+class ExtraActiveSeasons(SeasonValidationError):
+    """Найдено несколько активных сезонов"""
+    pass

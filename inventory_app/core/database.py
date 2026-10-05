@@ -48,7 +48,7 @@ def create_tables(conn: sqlite3.Connection) -> None:
             season_id INTEGER NOT NULL,
             product_id INTEGER NOT NULL,
             date TEXT NOT NULL,
-            type TEXT NOT NULL CHECK (type IN ('продажа', 'поступление', 'инвентаризация', 'изменение_поступления')),
+            type TEXT NOT NULL CHECK (type IN ('продажа', 'отмена_заказа', 'поступление', 'инвентаризация', 'изменение_поступления')),
             quantity INTEGER NOT NULL,
             source TEXT NOT NULL,
             source_id INTEGER,
@@ -63,6 +63,7 @@ def create_tables(conn: sqlite3.Connection) -> None:
             tg_user TEXT,
             date TEXT NOT NULL,
             total_sum INTEGER NOT NULL DEFAULT 0,
+            active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1)),
             FOREIGN KEY (season_id) REFERENCES seasons(id)
         );
 

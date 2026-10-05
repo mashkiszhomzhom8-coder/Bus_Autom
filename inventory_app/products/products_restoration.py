@@ -25,7 +25,10 @@ def get_inactive_products(conn):
 
 def format_inactive_products(products):
     """Формирует текстовый список неактивных товаров."""
-    return "\n".join(f'{product["id"]}: {product["name"]} {product["size"] or "без размера"}' for product in products)
+    return "\n".join(
+        f'{product["id"]} — {product["name"]} — {product["size"] or "без размера"}'
+        for product in products
+    )
 
 
 def validate_product_ids(conn, raw_ids):
@@ -128,7 +131,7 @@ def restore_product_rows_in_excel(worksheet, product_ids):
     rows_by_id = find_product_rows_in_excel(worksheet, product_ids)
 
     for row_num in rows_by_id.values():
-        worksheet.range(f"{row_num}:{row_num}").color = (255, 255, 255)
+        worksheet.range(f"{row_num}:{row_num}").color = None
 
 
 def show_restoration_success(app, product_ids):
@@ -146,19 +149,48 @@ def show_restoration_error(app, error, excel_restored):
 
     app.alert(message, title="Ошибка восстановления товаров", buttons="ok", mode="critical")
 
-
 def prepare_inactive_products():
     """Подготавливает список неактивных товаров для VBA."""
     workbook = xw.Book.caller()
-    worksheet = get_worksheet(workbook, price_sheet)
     conn = connect_db()
 
     try:
+        service_sheet = workbook.sheets["_service"]
+
         products = get_inactive_products(conn)
-        products_text = format_inactive_products(products) if products else "Неактивных товаров нет."
-        worksheet.range("XFD1").value = products_text
+
+        if products:
+            products_text = format_inactive_products(products)
+        else:
+            products_text = "Неактивных товаров нет."
+
+        service_sheet.range("A1").value = products_text
+
     finally:
         conn.close()
+# def prepare_inactive_products():
+#     """Сохраняет список неактивных товаров во временный файл."""
+#     workbook = xw.Book.caller()
+#     conn = connect_db()
+#
+#     try:
+#         products = get_inactive_products(conn)
+#
+#         if products:
+#             products_text = format_inactive_products(products)
+#         else:
+#             products_text = "Неактивных товаров нет."
+#
+#         excel_path = Path(workbook.fullname)
+#         temp_file = excel_path.parent / "inactive_products.txt"
+#
+#         temp_file.write_text(
+#             products_text,
+#             encoding="utf-8"
+#         )
+#
+#     finally:
+#         conn.close()
 
 
 def restore_products(workbook, raw_ids):
