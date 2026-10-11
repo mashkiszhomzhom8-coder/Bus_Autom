@@ -42,7 +42,7 @@ def append_fst_season(conn, workbook):
     Returns:
         ID созданного сезона.
     """
-    excel_file = Path(workbook.fullname).name
+    excel_file = str(Path(workbook.fullname).resolve())
 
     cursor = conn.execute(
         """
@@ -54,7 +54,7 @@ def append_fst_season(conn, workbook):
         VALUES (?, ?, ?);
         """,
         (
-            "22.07.2026",
+            date.today().isoformat(),
             excel_file,
             "active"
         )

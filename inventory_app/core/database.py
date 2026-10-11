@@ -127,7 +127,7 @@ def create_tables(conn: sqlite3.Connection) -> None:
         CREATE TABLE IF NOT EXISTS seasons (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             start_date TEXT NOT NULL,
-            end_date TEXT NOT NULL DEFAULT 0,
+            end_date TEXT,
             excel_file TEXT,
             status TEXT NOT NULL CHECK (status IN ('active', 'closed'))
         );
@@ -168,6 +168,80 @@ def create_tables(conn: sqlite3.Connection) -> None:
     )
 
     conn.commit()
+
+
+def make_seasons_end_date_nullable(conn):
+    """Обновляет старую таблицу seasons, где end_date не мог быть NULL."""
+
+    columns = conn.execute("PRAGMA table_info(seasons)").fetchall()
+
+    end_date_column = next(
+        (column for column in columns if column["name"] == "end_date"),
+        None
+    )
+
+    if end_date_column is None:
+        raise DatabaseSystemError("В таблице seasons отсутствует поле end_date")
+
+    if not end_date_column["notnull"]:
+        return
+
+    conn.commit()
+    conn.execute("PRAGMA foreign_keys = OFF")
+
+    try:
+        conn.execute("BEGIN")
+
+        conn.execute(
+            """
+            CREATE TABLE seasons_new (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                start_date TEXT NOT NULL,
+                end_date TEXT,
+                excel_file TEXT,
+                status TEXT NOT NULL CHECK (status IN ('active', 'closed'))
+            )
+            """
+        )
+
+        conn.execute(
+            """
+            INSERT INTO seasons_new (
+                id,
+                start_date,
+                end_date,
+                excel_file,
+                status
+            )
+            SELECT
+                id,
+                start_date,
+                end_date,
+                excel_file,
+                status
+            FROM seasons
+            """
+        )
+
+        conn.execute("DROP INDEX IF EXISTS idx_only_one_active_season")
+        conn.execute("DROP TABLE seasons")
+        conn.execute("ALTER TABLE seasons_new RENAME TO seasons")
+        conn.execute(
+            """
+            CREATE UNIQUE INDEX idx_only_one_active_season
+            ON seasons(status)
+            WHERE status = 'active'
+            """
+        )
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.execute("PRAGMA foreign_keys = ON")
 
 def get_active_season_id(conn):
     """Возвращает ID активного сезона.

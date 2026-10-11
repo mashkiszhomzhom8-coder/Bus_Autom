@@ -1,4 +1,5 @@
 from pathlib import Path
 
 
-SEASONS_FOLDER = Path("/BusAutom/All_seasons")
+PROJECT_FOLDER = Path(__file__).resolve().parents[2]
+SEASONS_FOLDER = PROJECT_FOLDER.parent / "All_seasons"

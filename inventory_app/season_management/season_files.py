@@ -33,6 +33,7 @@ def format_date_for_filename(value):
     - datetime.date
     - datetime.datetime
     - строку YYYY-MM-DD
+    - строку DD.MM.YYYY
     - строку, начинающуюся с YYYY-MM-DD
     """
 
@@ -55,7 +56,10 @@ def format_date_for_filename(value):
     try:
         parsed_date = date.fromisoformat(date_part)
     except ValueError:
-        raise ValueError(f"Некорректная дата сезона: {value}")
+        try:
+            parsed_date = datetime.strptime(date_part, "%d.%m.%Y").date()
+        except ValueError:
+            raise ValueError(f"Некорректная дата сезона: {value}")
 
     return parsed_date.isoformat()
 
